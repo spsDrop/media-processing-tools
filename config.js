@@ -12,7 +12,9 @@ exports.seriesRemap = {
     "The Daily Show":"The Daily Show with Jon Stewart",
     "American Dad":"American Dad!",
     "Conan":"Conan (2010)",
-    "Childrens Hospital US":"Childrens Hospital"
+    "Childrens Hospital US": "Childrens Hospital",
+    "Adventure Time with Finn and Jake":"Adventure Time",
+    "Key and Peele": "Key & Peele"
 };
 
 exports.TVDBAPIKey = "6FED0C7060E9AA5B";

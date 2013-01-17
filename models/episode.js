@@ -104,9 +104,11 @@ exports.Episode = function(fullPath){
                     "&language=en";
 
         netUtils.getURL(url, function(err, resText){
+		console.log(resText);
             parser.parseString(resText, function (err, data) {
+                data = data.Data;
                 var series = (data.Series && data.Series[0]) ? data.Series[0] : data.Series;
-                if(data.Series){
+                if(series){
                     episode.seriesId = series.seriesid;
                     episode.seriesName = series.SeriesName;
                     console.log("Series name found: "+episode.seriesName);
@@ -140,11 +142,12 @@ exports.Episode = function(fullPath){
         console.log("Getting URL: "+url);
         netUtils.getURL( url, function(err, resText){
             parser.parseString(resText, function (err, data) {
-                if(data){
-                    if(data.Episode){
-                        episode.episodeName = data.Episode.EpisodeName;
-                        episode.episodeNumber = data.Episode.EpisodeNumber;
-                        episode.seasonNumber = data.Episode.SeasonNumber;
+                if(data && data.Data){
+                    var episodeData = data.Data.Episode[0];
+                    if(episodeData){
+                        episode.episodeName = episodeData.EpisodeName[0];
+                        episode.episodeNumber = episodeData.EpisodeNumber[0];
+                        episode.seasonNumber = episodeData.SeasonNumber[0];
                         console.log("Episode name found: "+episode.episodeName);
                         cb(null, episode);
                     }else{
