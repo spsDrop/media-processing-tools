@@ -89,7 +89,9 @@ function recursiveFileMap(path, map, cb, list){
 
             function checkDone(){
                 if(i === 0){
-                    cb(list);
+					map(path, list, true, function(){
+						cb(list);
+					});
                 }
             }
         });

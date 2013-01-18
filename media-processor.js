@@ -44,7 +44,12 @@ function processPath(path, mediaType, getNameFromFolders, cleanDirectory, cb){
                     processors[mediaType](matchingPath.file, moveFiles);
                 }
             }else{
+				if(cleanDirectory){
+					console.log("Removing download directory.");
+					fileUtils.rmdirRecursive(path);
+				}
                 xbmcAPI.updateAllXBMCServers();
+				console.log("Your directory has been processed.");
                 cb();
             }
 
@@ -55,31 +60,26 @@ function processPath(path, mediaType, getNameFromFolders, cleanDirectory, cb){
                     processNext();
                 }else{
                     fileUtils.createDirectories(targetFolder, function(){
-                        fileUtils.moveFile(currentPath, targetFile, cleanUpCheck);
+                        fileUtils.moveFile(currentPath, targetFile, existanceCheck);
                     });
                 }
             }
 
 
 
-            function cleanUpCheck(err, targetPath, exists){
+            function existanceCheck(err, targetPath, exists){
                 if(err){
                     console.log("Error moving file.");
                     processNext();
-                }else{
-                    if(cleanDirectory){
-                        console.log("Cleaning up download directory.");
-                        fileUtils.rmdirRecursive(path);
-                    }else{
-                        if(exists){
-                            fileUtils.getSafeFileName(targetPath, function(targetPath){
-                                console.log(currentPath);
-                                fileUtils.moveFile(currentPath, targetPath, processNext);
-                            })
-                        }else{
-                            processNext();
-                        }
-                    }
+                }else{				
+					if(exists){
+						fileUtils.getSafeFileName(targetPath, function(targetPath){
+							console.log(currentPath);
+							fileUtils.moveFile(currentPath, targetPath, processNext);
+						})
+					}else{
+						processNext();
+					}
                 }
             }
 
