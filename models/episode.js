@@ -1,4 +1,5 @@
 var xml2js = require('xml2js'),
+    path = require("path"),
     parser = new xml2js.Parser(),
     netUtils = require("./../utils/net-utils"),
     config = require("./../config"),
@@ -6,7 +7,7 @@ var xml2js = require('xml2js'),
     TVDBAPIKey = config.TVDBAPIKey;
 
 exports.Episode = function(fullPath){
-    var illegalCharacters = ['<','>','/','\\','|',':','*','?','"'],
+    var illegalCharacters = ['<','>','/','\\','|',':','*','?','"','/'],
         t = this;
 
     t.fileName =
@@ -27,7 +28,7 @@ exports.Episode = function(fullPath){
 
     function init(){
         t.path = fullPath;
-        t.extension = fullPath.match(/^.*\.(.*)$/)[1];
+        t.extension = path.extname(fullPath).match(/[^\.]*$/).toString().toLowerCase();
         t.fileName = fullPath.replace('.'+t.extension,'').match(/[^\/]+$/i)[0];
         if(t.fileName.match(/\d\d\d\d.\d\d.\d\d/)){
             t.seriesName = t.fileName.match(/(.*)\d\d\d\d.\d\d.\d\d/)[1];
@@ -79,12 +80,12 @@ exports.Episode = function(fullPath){
     function clean(str){
         illegalCharacters.forEach(function(illChar){
             str = str.replace(illChar,'');
-            str = str.replace(/-/g, "");
-            str = str.replace(/\./g, " ");
-            str = str.replace(/(^\s*)|(\s*$)/gi,"");
-            str = str.replace(/_/g," ");
-            str = str.replace(/\//g,",");
         },t);
+        str = str.replace(/-/g, "");
+        str = str.replace(/\./g, " ");
+        str = str.replace(/(^\s*)|(\s*$)/gi,"");
+        str = str.replace(/_/g," ");
+        str = str.replace(/\//g,",");
         return str;
     }
 

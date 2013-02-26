@@ -35,9 +35,10 @@ exports.targetFolders = {
 exports.Extensions = {
     "mkv":"mkv",
     "avi":"avi",
-    "mp4":"mp4"
+    "mp4":"mp4",
+    "mpg":"mpg"
 };
 
 exports.xbmcServerURLs = {
-    Slim:"http://192.168.10.150/xbmcCmds/xbmcHttp?command=ExecBuiltIn&parameter=XBMC.updatelibrary(video)"
+    Slim:"http://192.168.10.150/jsonrpc?request={%22jsonrpc%22:%222.0%22,%22method%22:%22VideoLibrary.Scan%22,%22id%22:1}"
 };

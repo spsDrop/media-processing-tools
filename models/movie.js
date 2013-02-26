@@ -5,7 +5,7 @@ var xml2js = require('xml2js'),
     THE_MOVE_DB_API_KEY = config.THE_MOVE_DB_API_KEY;
 
 exports.Movie = function(fullPath){
-    var illegalCharacters = ['<','>','/','\\','|',':','*','?','"'],
+    var illegalCharacters = ['<','>','/','\\','|',':','*','?','"','/'],
         t = this;
     
     t.file =
@@ -20,7 +20,7 @@ exports.Movie = function(fullPath){
     function init(){
         t.path = fullPath;
         t.extension = fullPath.match(/^.*\.(.*)$/)[1];
-        t.fileName = fullPath.replace(t.extension,'').match(/\/.*\/(.*)/i)[1];
+        t.fileName = fullPath.replace('.'+t.extension,'').match(/[^\/]+$/i)[0];
         t.year = t.fileName.replace('1080','').replace('720','').match(/\d\d\d\d/)[0];
         t.title = t.fileName.replace('1080','').replace('720','').match(/^(.*)\d\d\d\d/)[1].replace("(","").replace(")","").split('.').join(' ');
         t.title = clean(t.title);

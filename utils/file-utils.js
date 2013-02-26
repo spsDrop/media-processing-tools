@@ -1,4 +1,5 @@
-var fs = require("fs");
+var fs = require("fs"),
+    Path = require("path");
 
 exports.fileUtils = {
     findFileByExtensions:findFileByExtensions,
@@ -24,7 +25,9 @@ function findFileByExtensions(path, extns, cb, list){
     function findMap(cp, list, isDir, cb){
         var extn;
         if(!isDir){
-            extn = cp.match(/^.*\.(.*)$/)[1].toLowerCase();
+            extn = Path.extname(cp).match(/[^\.]*$/).toString().toLowerCase();
+            console.log("file:"+cp);
+            console.log("extn:"+extn);
             if(extns[extn]){
                 list.push({file:cp, extn:extn});
             }
@@ -59,42 +62,42 @@ function recursiveFileMap(path, map, cb, list){
     fs.readdir(path, function(err, subPaths){
 
         var i = subPaths.length;
+		
+		if(i){
+			subPaths.forEach(function(file){
+				var currentPath = path+"/"+file;
 
-        if(i === 0){
-            cb(list);
-        }
+				fs.stat(currentPath, function(err, fileStat){
+					if(fileStat.isDirectory()){
 
-        subPaths.forEach(function(file){
-            var currentPath = path+"/"+file;
+						recursiveFileMap(currentPath, map, function(){
+							map(currentPath, list, true, function(){
+								checkDone();
+							});
+						}, list);
 
-            fs.stat(currentPath, function(err, fileStat){
-                if(fileStat.isDirectory()){
+					}else if(fileStat.isFile()){
 
-                    recursiveFileMap(currentPath, map, function(){
-                        map(currentPath, list, true, function(){
-                            i--;
-                            checkDone();
-                        });
-                    }, list);
+						map(currentPath, list, false, function(){
+							checkDone();
+						});
 
-                }else if(fileStat.isFile()){
+					}
+				});
 
-                    map(currentPath, list, false, function(){
-                        i--;
-                        checkDone();
-                    });
-
-                }
-            });
-
-            function checkDone(){
-                if(i === 0){
-					map(path, list, true, function(){
-						cb(list);
-					});
-                }
-            }
-        });
+			});
+		}else{			
+			checkDone(true);
+		}
+		
+		function checkDone(complete){
+			i--;
+			if(i === 0 || complete){
+				map(path, list, true, function(){
+					cb(list);
+				});
+			}
+		}
     });
 }
 
@@ -153,7 +156,7 @@ function moveFile(path, targetPath, cb){
 }
 
 function folderNameToFileName(path, file, extn, cb){
-    var fixedFileName = path + '/' + path.match(/\/.*\/(.*)/i)[1] + '.' + extn;
+    var fixedFileName = path + '/' + path.match(/[^\/]*(?=$|\/$)/) + '.' + extn;
 
     fs.rename(file, fixedFileName, function(err){
         if(err){
