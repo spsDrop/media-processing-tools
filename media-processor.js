@@ -1,8 +1,10 @@
 var Episode = require("./models/episode").Episode,
     Movie = require("./models/movie").Movie,
     fileUtils = require("./utils/file-utils").fileUtils,
+    dedupePath = require("./dedupe-series").dedupePath,
     xbmcAPI = require("./xbmc-api"),
     config = require("./config"),
+	path = require("path"),
 
     mediaTypes = config.mediaTypes,
     Extensions = config.Extensions,
@@ -60,25 +62,31 @@ function processPath(path, mediaType, getNameFromFolders, cleanDirectory, cb){
                     processNext();
                 }else{
                     fileUtils.createDirectories(targetFolder, function(){
-                        fileUtils.moveFile(currentPath, targetFile, existanceCheck);
+                        fileUtils.moveFile(currentPath, targetFile, function(err, targetPath, exists){
+                            existenceCheck(err, targetPath, exists, function(){
+                                if(exists){
+                                    dedupePath(targetFolder);
+                                }
+                                processNext();
+                            });
+                        });
                     });
                 }
             }
 
 
 
-            function existanceCheck(err, targetPath, exists){
+            function existenceCheck(err, targetPath, exists, cb){
                 if(err){
                     console.log("Error moving file.");
-                    processNext();
-                }else{				
+                    cb();
+                }else{
 					if(exists){
 						fileUtils.getSafeFileName(targetPath, function(targetPath){
-							console.log(currentPath);
-							fileUtils.moveFile(currentPath, targetPath, processNext);
+							fileUtils.moveFile(currentPath, targetPath, cb);
 						})
 					}else{
-						processNext();
+						cb()
 					}
                 }
             }
@@ -94,7 +102,7 @@ function processMovie(finalName, cb){
 
     movie.remoteUpdateMovieData(movie, function(err){
         var targetMovieFolder = targetFolder + movie.title + " (" + movie.year + ")",
-            targetMovieFile = targetMovieFolder + "/" + movie.title + " (" + movie.year + ")" + "." + movie.extension;
+            targetMovieFile = targetMovieFolder + path.sep + movie.title + " (" + movie.year + ")" + "." + movie.extension;
 
         if(err){
             cb(err);
@@ -110,7 +118,7 @@ function processEpisode(finalName, cb){
 
     episode.remoteUpdateEpisodeData(function(err){
         var targetEpisodeFolder = targetFolder + episode.seriesName,
-            targetEpisodeFile = targetFolder + episode.seriesName + "/" + episode.seriesName + " - s" + zerofy(episode.seasonNumber) + "e" + zerofy(episode.episodeNumber) + " - " + episode.episodeName + "." + episode.extension;
+            targetEpisodeFile = targetFolder + episode.seriesName + path.sep + episode.seriesName + " - s" + zerofy(episode.seasonNumber) + "e" + zerofy(episode.episodeNumber) + " - " + episode.episodeName + "." + episode.extension;
 
         if(err){
             cb(err);

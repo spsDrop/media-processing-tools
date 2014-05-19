@@ -1,0 +1,1 @@
+node d:\storage\Projects\sabnzbscripts\scripts\process-episodes.js %1

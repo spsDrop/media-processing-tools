@@ -1,0 +1,7 @@
+{
+  "name": "sabscripts",
+  "version": "0.0.1",
+  "dependencies": {
+    "veelo": "0.0.24"
+  }
+}

@@ -26,8 +26,6 @@ function findFileByExtensions(path, extns, cb, list){
         var extn;
         if(!isDir){
             extn = Path.extname(cp).match(/[^\.]*$/).toString().toLowerCase();
-            console.log("file:"+cp);
-            console.log("extn:"+extn);
             if(extns[extn]){
                 list.push({file:cp, extn:extn});
             }
@@ -65,7 +63,7 @@ function recursiveFileMap(path, map, cb, list){
 		
 		if(i){
 			subPaths.forEach(function(file){
-				var currentPath = path+"/"+file;
+				var currentPath = path+Path.sep+file;
 
 				fs.stat(currentPath, function(err, fileStat){
 					if(fileStat.isDirectory()){
@@ -156,7 +154,7 @@ function moveFile(path, targetPath, cb){
 }
 
 function folderNameToFileName(path, file, extn, cb){
-    var fixedFileName = path + '/' + path.match(/[^\/]*(?=$|\/$)/) + '.' + extn;
+    var fixedFileName = path + Path.sep + path.match(new RegExp("[^\\"+Path.sep+"]*(?=$|\\"+Path.sep+"$)")) + '.' + extn;
 
     fs.rename(file, fixedFileName, function(err){
         if(err){

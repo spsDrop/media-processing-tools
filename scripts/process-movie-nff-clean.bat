@@ -1,0 +1,1 @@
+node d:\storage\Projects\sabnzbscripts\scripts\process-movie-nff-clean.js %1

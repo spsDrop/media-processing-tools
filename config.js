@@ -14,7 +14,12 @@ exports.seriesRemap = {
     "Conan":"Conan (2010)",
     "Childrens Hospital US": "Childrens Hospital",
     "Adventure Time with Finn and Jake":"Adventure Time",
-    "Key and Peele": "Key & Peele"
+    "Key and Peele": "Key & Peele",
+    "Brooklyn Nine Nine": "Brooklyn Nine-Nine"
+};
+
+exports.seariesSeasonRemap = {
+    "American Dad!":1
 };
 
 exports.TVDBAPIKey = "6FED0C7060E9AA5B";
@@ -28,15 +33,16 @@ exports.mediaTypes = {
 };
 
 exports.targetFolders = {
-    EPISODE:"/storage/Video/Television/",
-    MOVIE:"/storage/Video/Movies/New Movies/"
+    EPISODE:"d:\\storage\\Video\\Television\\",
+    MOVIE:"d:\\storage\\Video\\Movies\\New Movies\\"
 };
 
 exports.Extensions = {
     "mkv":"mkv",
     "avi":"avi",
     "mp4":"mp4",
-    "mpg":"mpg"
+    "mpg":"mpg",
+    "m4v":"m4v"
 };
 
 exports.xbmcServerURLs = {

@@ -2,8 +2,10 @@ var xml2js = require('xml2js'),
     path = require("path"),
     parser = new xml2js.Parser(),
     netUtils = require("./../utils/net-utils"),
+    mediaUtils = require("./../utils/media-utils").mediaUtils,
     config = require("./../config"),
     seriesRemap = config.seriesRemap,
+    seariesSeasonRemap = config.seariesSeasonRemap,
     TVDBAPIKey = config.TVDBAPIKey;
 
 exports.Episode = function(fullPath){
@@ -23,13 +25,15 @@ exports.Episode = function(fullPath){
 
     t.clean = clean;
     t.remoteUpdateEpisodeData = remoteUpdateEpisodeData;
+    t.getMediaInfo = getMediaInfo;
+    t.getMediaScore = getMediaScore;
 
     init();
 
     function init(){
         t.path = fullPath;
         t.extension = path.extname(fullPath).match(/[^\.]*$/).toString().toLowerCase();
-        t.fileName = fullPath.replace('.'+t.extension,'').match(/[^\/]+$/i)[0];
+        t.fileName = fullPath.replace('.'+t.extension,'').match(new RegExp("[^\\"+path.sep+"]+$","i"))[0];
         if(t.fileName.match(/\d\d\d\d.\d\d.\d\d/)){
             t.seriesName = t.fileName.match(/(.*)\d\d\d\d.\d\d.\d\d/)[1];
             t.airDate = t.fileName.match(/\d\d\d\d.\d\d.\d\d/)[0].replace(/\./g,'-');
@@ -71,9 +75,15 @@ exports.Episode = function(fullPath){
         t.episodeNumber = parseFloat(t.episodeNumber);
         t.seasonNumber = parseFloat(t.seasonNumber);
         t.seriesName = clean(t.seriesName);
+        
         if(seriesRemap[t.seriesName]){
             t.seriesName = seriesRemap[t.seriesName];
         }
+        
+        if(seariesSeasonRemap[t.seriesName]){
+            t.seasonNumber += seariesSeasonRemap[t.seriesName];
+        }
+        
         t.episodeName = clean(t.episodeName);
     }
 
@@ -87,6 +97,36 @@ exports.Episode = function(fullPath){
         str = str.replace(/_/g," ");
         str = str.replace(/\//g,",");
         return str;
+    }
+
+    function getMediaInfo(cb){
+        mediaUtils.getMediaInfo(fullPath, function(tracks){
+            t.tracks = tracks;
+            cb();
+        });
+    }
+
+    function getMediaScore(cb){
+        var mediaScore = 0;
+
+        getMediaInfo(function(){
+            if(t.tracks.Audio && t.tracks.Video && t.tracks.General) {
+                var width = parseFloat(t.tracks.Video[0].Width.replace(/\W/g, ""));
+
+                t.bitRate = parseFloat(t.tracks.General[0].Overall_bit_rate.replace(/\W/g, "."));
+
+                mediaScore += t.tracks.Audio[0].Language == "English" ? 10 : 0;
+                mediaScore += t.tracks.Audio[0].Format == "DTS" ? 1 : 0;
+                mediaScore += t.tracks.Audio.length == 1 ? 1 : 0;
+                mediaScore += t.tracks.General[0].Format == "Matroska" ? 1 : 0;
+                mediaScore += width >= 720 ? 1 : 0;
+                mediaScore += width == 1980 ? 1 : 0;
+                mediaScore += t.tracks.Video.length == 1 ? 1 : 0;
+            }
+
+            t.mediaScore = mediaScore;
+            cb(mediaScore);
+        })
     }
 
     function remoteUpdateEpisodeData(cb){
@@ -103,9 +143,9 @@ exports.Episode = function(fullPath){
         var url =   "http://www.thetvdb.com/api/GetSeries.php?seriesname=" +
                     encodeURIComponent(episode.seriesName) +
                     "&language=en";
-
+        console.log(url);
         netUtils.getURL(url, function(err, resText){
-		console.log(resText);
+		    console.log(resText);
             parser.parseString(resText, function (err, data) {
                 data = data.Data;
                 var series = (data.Series && data.Series[0]) ? data.Series[0] : data.Series;
@@ -146,7 +186,7 @@ exports.Episode = function(fullPath){
                 if(data && data.Data){
                     var episodeData = data.Data.Episode[0];
                     if(episodeData){
-                        episode.episodeName = episodeData.EpisodeName[0];
+                        episode.episodeName = clean(episodeData.EpisodeName[0]);
                         episode.episodeNumber = episodeData.EpisodeNumber[0];
                         episode.seasonNumber = episodeData.SeasonNumber[0];
                         console.log("Episode name found: "+episode.episodeName);

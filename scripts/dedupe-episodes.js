@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
 var fs = require("fs"),
+    Path = require("path"),
     fileUtils = require("./../utils/file-utils").fileUtils,
-    episodeProcessor = require("./../media-processor"),
-    config = require("./../config.js");
-	
-	console.log(process.argv);
-	
+    dedupePath = require("../dedupe-series").dedupePath;
+
+process.chdir(Path.join(__dirname, ".."));
+
 if(!process.argv[2]){
     console.log("Please Enter a File Path.");
     process.exit();
@@ -20,6 +20,6 @@ fileUtils.validateFilePath(path, function(err){
     if(err){
         console.log(err);
     }else{
-        episodeProcessor.processPath(path, config.mediaTypes.EPISODE, true, true);
+        dedupePath(path);
     }
 });
